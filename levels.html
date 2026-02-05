@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lesestjerner – Nivåvalg</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar card">
+      <div>
+        <h1>🌟 Lesestjerner</h1>
+        <p class="subtitle">Nivåvalg</p>
+      </div>
+      <button id="logoutBtn" class="secondary">Bytt spiller</button>
+    </header>
+
+    <section class="progress card">
+      <h2>Din utvikling</h2>
+      <p><strong>Spiller:</strong> <span id="activeUser">-</span></p>
+      <div class="stats">
+        <p><strong>Stjerner:</strong> <span id="starCount">0</span> ⭐</p>
+        <p><strong>Merker:</strong> <span id="badgeCount">0</span> 🏅</p>
+      </div>
+      <div class="bar-wrap"><div id="progressBar" class="bar"></div></div>
+      <p id="badgeShelf" class="badge-shelf"></p>
+    </section>
+
+    <section class="card level-picker">
+      <h2>Velg nivå</h2>
+      <div id="levelButtons" class="level-buttons"></div>
+    </section>
+
+    <section class="levels card">
+      <h2>Historikk</h2>
+      <ul id="historyList" class="history-list"></ul>
+      <button id="resetProgress" class="secondary">Nullstill min fremgang</button>
+    </section>
+  </div>
+
+  <script src="game-data.js"></script>
+  <script src="levels.js"></script>
+</body>
+</html>

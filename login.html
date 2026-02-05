@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lesestjerner – Innlogging</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar card">
+      <div>
+        <h1>🌟 Lesestjerner</h1>
+        <p class="subtitle">Innlogging</p>
+      </div>
+    </header>
+
+    <section class="card auth view">
+      <h2>Velkommen</h2>
+      <p>Skriv inn navnet ditt og trykk Start.</p>
+      <label for="nameInput">Navn</label>
+      <input id="nameInput" type="text" maxlength="20" placeholder="f.eks. Emma" />
+      <button id="startBtn" class="primary">Start</button>
+      <p id="authFeedback" class="feedback"></p>
+    </section>
+  </div>
+
+  <script src="game-data.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

@@ -2,81 +2,11 @@
 <html lang="no">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Lesestjerner – Lesespill for barn</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta http-equiv="refresh" content="0; url=login.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesestjerner</title>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Lesestjerner spill">
-    <header class="topbar card">
-      <div>
-        <h1>🌟 Lesestjerner</h1>
-        <p class="subtitle">Lær å lese med morsomme oppgaver!</p>
-      </div>
-      <button id="logoutBtn" class="secondary" hidden>Bytt spiller</button>
-    </header>
-
-    <section id="loginView" class="card auth view" aria-live="polite">
-      <h2>Velkommen</h2>
-      <p>Skriv inn navnet ditt for å fortsette.</p>
-      <label for="nameInput">Navn</label>
-      <input id="nameInput" type="text" maxlength="20" placeholder="f.eks. Emma" />
-      <button id="startBtn" class="primary">Start</button>
-      <p id="authFeedback" class="feedback"></p>
-    </section>
-
-    <section id="levelView" class="view" hidden>
-      <section class="progress card" aria-live="polite">
-        <h2>Din utvikling</h2>
-        <p><strong>Spiller:</strong> <span id="activeUserLevel">-</span></p>
-        <div class="stats">
-          <p><strong>Stjerner:</strong> <span id="starCountLevel">0</span> ⭐</p>
-          <p><strong>Merker:</strong> <span id="badgeCountLevel">0</span> 🏅</p>
-        </div>
-        <div class="bar-wrap"><div id="progressBarLevel" class="bar"></div></div>
-        <p id="badgeShelfLevel" class="badge-shelf"></p>
-      </section>
-
-      <section class="card level-picker">
-        <h2>Nivåvalg</h2>
-        <p class="small">Velg nivå for å starte. Fullfør nivået før du velger neste.</p>
-        <div id="levelButtons" class="level-buttons"></div>
-      </section>
-
-      <section class="levels card">
-        <h2>Historikk</h2>
-        <ul id="historyList" class="history-list"></ul>
-        <button id="resetProgress" class="secondary">Nullstill min fremgang</button>
-      </section>
-    </section>
-
-    <section id="taskView" class="view" hidden>
-      <section class="progress card" aria-live="polite">
-        <h2>Din utvikling</h2>
-        <p><strong>Spiller:</strong> <span id="activeUserTask">-</span></p>
-        <div class="stats">
-          <p><strong>Stjerner:</strong> <span id="starCountTask">0</span> ⭐</p>
-          <p><strong>Merker:</strong> <span id="badgeCountTask">0</span> 🏅</p>
-        </div>
-        <div class="bar-wrap"><div id="progressBarTask" class="bar"></div></div>
-        <p id="badgeShelfTask" class="badge-shelf"></p>
-      </section>
-
-      <main class="game card">
-        <h2 id="taskTitle">Oppgave</h2>
-        <p id="taskInstruction"></p>
-        <div id="taskContent" class="task-content"></div>
-        <div id="answerButtons" class="answer-buttons"></div>
-        <p id="feedback" class="feedback" aria-live="assertive"></p>
-        <div class="task-actions">
-          <button id="backToLevelsBtn" class="secondary">Til nivåvalg</button>
-          <button id="nextTask" class="primary" disabled>Neste oppgave</button>
-        </div>
-      </main>
-    </section>
-  </div>
-
-  <div id="rewardAnimation" class="reward-animation" aria-hidden="true">✨ Bra jobbet! ✨</div>
-  <script src="app.js"></script>
+  <p>Sender deg videre til <a href="login.html">innlogging</a>…</p>
 </body>
 </html>
