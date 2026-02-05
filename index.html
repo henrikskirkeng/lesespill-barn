@@ -13,27 +13,22 @@
         <h1>🌟 Lesestjerner</h1>
         <p class="subtitle">Lær å lese med morsomme oppgaver!</p>
       </div>
-      <button id="logoutBtn" class="secondary" hidden>Logg ut</button>
+      <button id="logoutBtn" class="secondary" hidden>Bytt spiller</button>
     </header>
 
     <section id="loginView" class="card auth view" aria-live="polite">
-      <h2>Innlogging</h2>
-      <p>Lag en profil eller logg inn for å fortsette.</p>
-      <label for="usernameInput">Brukernavn</label>
-      <input id="usernameInput" type="text" autocomplete="username" maxlength="20" placeholder="f.eks. leser123" />
-      <label for="passwordInput">Passord</label>
-      <input id="passwordInput" type="password" autocomplete="current-password" maxlength="30" placeholder="Skriv passord" />
-      <div class="auth-actions">
-        <button id="createProfileBtn" class="secondary">Opprett profil</button>
-        <button id="loginBtn" class="primary">Logg inn</button>
-      </div>
+      <h2>Velkommen</h2>
+      <p>Skriv inn navnet ditt for å fortsette.</p>
+      <label for="nameInput">Navn</label>
+      <input id="nameInput" type="text" maxlength="20" placeholder="f.eks. Emma" />
+      <button id="startBtn" class="primary">Start</button>
       <p id="authFeedback" class="feedback"></p>
     </section>
 
     <section id="levelView" class="view" hidden>
       <section class="progress card" aria-live="polite">
         <h2>Din utvikling</h2>
-        <p><strong>Innlogget som:</strong> <span id="activeUserLevel">-</span></p>
+        <p><strong>Spiller:</strong> <span id="activeUserLevel">-</span></p>
         <div class="stats">
           <p><strong>Stjerner:</strong> <span id="starCountLevel">0</span> ⭐</p>
           <p><strong>Merker:</strong> <span id="badgeCountLevel">0</span> 🏅</p>
@@ -44,7 +39,7 @@
 
       <section class="card level-picker">
         <h2>Nivåvalg</h2>
-        <p class="small">Velg et nivå. Du må fullføre nivået før du kan velge neste.</p>
+        <p class="small">Velg nivå for å starte. Fullfør nivået før du velger neste.</p>
         <div id="levelButtons" class="level-buttons"></div>
       </section>
 
@@ -58,7 +53,7 @@
     <section id="taskView" class="view" hidden>
       <section class="progress card" aria-live="polite">
         <h2>Din utvikling</h2>
-        <p><strong>Innlogget som:</strong> <span id="activeUserTask">-</span></p>
+        <p><strong>Spiller:</strong> <span id="activeUserTask">-</span></p>
         <div class="stats">
           <p><strong>Stjerner:</strong> <span id="starCountTask">0</span> ⭐</p>
           <p><strong>Merker:</strong> <span id="badgeCountTask">0</span> 🏅</p>

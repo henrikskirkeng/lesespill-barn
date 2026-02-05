@@ -1,4 +1,4 @@
-const STORAGE_KEY = "lesestjerner-profiles-v3";
+const STORAGE_KEY = "lesestjerner-profiles-v4";
 
 const levels = [
   {
@@ -46,10 +46,8 @@ const el = {
   loginView: document.getElementById("loginView"),
   levelView: document.getElementById("levelView"),
   taskView: document.getElementById("taskView"),
-  usernameInput: document.getElementById("usernameInput"),
-  passwordInput: document.getElementById("passwordInput"),
-  createProfileBtn: document.getElementById("createProfileBtn"),
-  loginBtn: document.getElementById("loginBtn"),
+  nameInput: document.getElementById("nameInput"),
+  startBtn: document.getElementById("startBtn"),
   authFeedback: document.getElementById("authFeedback"),
   logoutBtn: document.getElementById("logoutBtn"),
   activeUserLevel: document.getElementById("activeUserLevel"),
@@ -123,54 +121,30 @@ function setAuthFeedback(message, type = "good") {
   el.authFeedback.className = `feedback ${type}`;
 }
 
-function authValues() {
-  return {
-    username: el.usernameInput.value.trim(),
-    password: el.passwordInput.value
-  };
-}
-
-function createProfile() {
-  const { username, password } = authValues();
-  if (!username || !password) {
-    setAuthFeedback("Skriv både brukernavn og passord.", "bad");
-    return;
-  }
-  if (appState.data.users[username]) {
-    setAuthFeedback("Brukernavn finnes allerede. Prøv å logge inn.", "bad");
+function startWithName() {
+  const name = el.nameInput.value.trim();
+  if (!name) {
+    setAuthFeedback("Skriv inn et navn først.", "bad");
     return;
   }
 
-  appState.data.users[username] = { password, progress: blankProgress() };
-  appState.data.activeUser = username;
+  if (!appState.data.users[name]) {
+    appState.data.users[name] = { progress: blankProgress() };
+  }
+
+  appState.data.activeUser = name;
   saveData();
-  loginUser(username);
-  showReward("Profil opprettet! 🌟");
+  loginUser(name);
 }
 
-function loginProfile() {
-  const { username, password } = authValues();
-  const user = appState.data.users[username];
-  if (!user || user.password !== password) {
-    setAuthFeedback("Feil brukernavn eller passord.", "bad");
-    return;
-  }
-
-  appState.data.activeUser = username;
-  saveData();
-  loginUser(username);
-  showReward("Innlogging vellykket 👋");
-}
-
-function loginUser(username) {
-  appState.activeUser = username;
+function loginUser(name) {
+  appState.activeUser = name;
   appState.selectedLevel = null;
   appState.taskIndex = 0;
   el.logoutBtn.hidden = false;
-  el.activeUserLevel.textContent = username;
-  el.activeUserTask.textContent = username;
-  el.usernameInput.value = "";
-  el.passwordInput.value = "";
+  el.activeUserLevel.textContent = name;
+  el.activeUserTask.textContent = name;
+  el.nameInput.value = "";
   setAuthFeedback("");
   renderLevelPage();
   setView("levels");
@@ -184,7 +158,7 @@ function logoutUser() {
   saveData();
   el.logoutBtn.hidden = true;
   setView("login");
-  setAuthFeedback("Du er logget ut.", "good");
+  setAuthFeedback("Skriv inn navn og trykk Start.", "good");
 }
 
 function renderProgressWidgets() {
@@ -370,8 +344,7 @@ function showReward(message) {
   window.setTimeout(() => el.rewardAnimation.classList.remove("show"), 1400);
 }
 
-el.createProfileBtn.addEventListener("click", createProfile);
-el.loginBtn.addEventListener("click", loginProfile);
+el.startBtn.addEventListener("click", startWithName);
 el.logoutBtn.addEventListener("click", logoutUser);
 el.nextTask.addEventListener("click", goNextTask);
 el.backToLevelsBtn.addEventListener("click", backToLevels);
