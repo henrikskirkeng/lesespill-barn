@@ -1,0 +1,229 @@
+:root {
+  --bg: #f5f9ff;
+  --card: #ffffff;
+  --ink: #123;
+  --primary: #4a78ff;
+  --primary-dark: #365fd8;
+  --good: #1f9d55;
+  --bad: #d64545;
+  --accent: #ffd447;
+  --radius: 18px;
+  --shadow: 0 8px 20px rgba(20, 40, 100, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(180deg, #e9f2ff, var(--bg));
+  color: var(--ink);
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.subtitle,
+.small {
+  margin: 6px 0 0;
+  color: #345;
+}
+
+.auth {
+  display: grid;
+  gap: 8px;
+}
+
+input {
+  border: 2px solid #d9e4ff;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.auth-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.bar-wrap {
+  width: 100%;
+  height: 16px;
+  border-radius: 999px;
+  background: #d8e4ff;
+  overflow: hidden;
+}
+
+.bar {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #6a8dff, #4ad4ff);
+  transition: width 300ms ease;
+}
+
+.badge-shelf {
+  margin-bottom: 12px;
+}
+
+.level-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.level-button.active {
+  outline: 3px solid #8cb0ff;
+}
+
+.task-content {
+  font-size: clamp(1.15rem, 4.5vw, 1.7rem);
+  background: #f2f6ff;
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.answer-buttons {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+button {
+  border: none;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  min-height: 52px;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  opacity: 0.55;
+}
+
+button.primary {
+  margin-top: 12px;
+  width: 100%;
+  background: var(--primary);
+  color: white;
+}
+
+button.primary:not(:disabled):active,
+button.primary:not(:disabled):hover {
+  background: var(--primary-dark);
+}
+
+button.secondary {
+  background: #edf2ff;
+  color: #234;
+}
+
+.answer {
+  background: #fff7df;
+  border: 2px solid #ffe7a1;
+}
+
+.answer.correct {
+  background: #dcffe9;
+  border-color: #94ebbb;
+}
+
+.answer.wrong {
+  background: #ffe3e3;
+  border-color: #ffb0b0;
+}
+
+.feedback {
+  margin: 12px 0 0;
+  font-size: 1.1rem;
+  min-height: 24px;
+  font-weight: 600;
+}
+
+.feedback.good { color: var(--good); }
+.feedback.bad { color: var(--bad); }
+
+.history-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.reward-animation {
+  position: fixed;
+  inset: auto 20px 24px 20px;
+  background: var(--accent);
+  color: #4d3400;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  padding: 14px;
+  font-weight: 800;
+  transform: translateY(120px);
+  transition: transform 300ms ease;
+}
+
+.reward-animation.show {
+  transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+  .app {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .topbar,
+  #authCard,
+  #gameShell,
+  .progress,
+  .game,
+  .levels,
+  .level-picker {
+    grid-column: span 2;
+  }
+}
