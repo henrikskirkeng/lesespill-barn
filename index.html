@@ -16,9 +16,9 @@
       <button id="logoutBtn" class="secondary" hidden>Logg ut</button>
     </header>
 
-    <section id="authCard" class="card auth" aria-live="polite">
-      <h2>Start spillet</h2>
-      <p>Lag en profil eller logg inn for å lagre fremgangen din.</p>
+    <section id="loginView" class="card auth view" aria-live="polite">
+      <h2>Innlogging</h2>
+      <p>Lag en profil eller logg inn for å fortsette.</p>
       <label for="usernameInput">Brukernavn</label>
       <input id="usernameInput" type="text" autocomplete="username" maxlength="20" placeholder="f.eks. leser123" />
       <label for="passwordInput">Passord</label>
@@ -30,46 +30,58 @@
       <p id="authFeedback" class="feedback"></p>
     </section>
 
-    <section id="gameShell" hidden>
+    <section id="levelView" class="view" hidden>
       <section class="progress card" aria-live="polite">
         <h2>Din utvikling</h2>
-        <p><strong>Innlogget som:</strong> <span id="activeUser">-</span></p>
+        <p><strong>Innlogget som:</strong> <span id="activeUserLevel">-</span></p>
         <div class="stats">
-          <p><strong>Stjerner:</strong> <span id="starCount">0</span> ⭐</p>
-          <p><strong>Merker:</strong> <span id="badgeCount">0</span> 🏅</p>
+          <p><strong>Stjerner:</strong> <span id="starCountLevel">0</span> ⭐</p>
+          <p><strong>Merker:</strong> <span id="badgeCountLevel">0</span> 🏅</p>
         </div>
-        <div class="bar-wrap" aria-label="Total progresjon">
-          <div id="progressBar" class="bar"></div>
-        </div>
-        <p id="badgeShelf" class="badge-shelf">Ingen merker ennå. Spill for å tjene dine første!</p>
-        <button id="resetProgress" class="secondary">Nullstill min fremgang</button>
+        <div class="bar-wrap"><div id="progressBarLevel" class="bar"></div></div>
+        <p id="badgeShelfLevel" class="badge-shelf"></p>
       </section>
 
       <section class="card level-picker">
-        <h2>Velg nivå</h2>
-        <p id="levelStatus" class="small">Velg et nivå for å starte.</p>
+        <h2>Nivåvalg</h2>
+        <p class="small">Velg et nivå. Du må fullføre nivået før du kan velge neste.</p>
         <div id="levelButtons" class="level-buttons"></div>
+      </section>
+
+      <section class="levels card">
+        <h2>Historikk</h2>
+        <ul id="historyList" class="history-list"></ul>
+        <button id="resetProgress" class="secondary">Nullstill min fremgang</button>
+      </section>
+    </section>
+
+    <section id="taskView" class="view" hidden>
+      <section class="progress card" aria-live="polite">
+        <h2>Din utvikling</h2>
+        <p><strong>Innlogget som:</strong> <span id="activeUserTask">-</span></p>
+        <div class="stats">
+          <p><strong>Stjerner:</strong> <span id="starCountTask">0</span> ⭐</p>
+          <p><strong>Merker:</strong> <span id="badgeCountTask">0</span> 🏅</p>
+        </div>
+        <div class="bar-wrap"><div id="progressBarTask" class="bar"></div></div>
+        <p id="badgeShelfTask" class="badge-shelf"></p>
       </section>
 
       <main class="game card">
         <h2 id="taskTitle">Oppgave</h2>
-        <p id="taskInstruction">Velg et nivå først.</p>
-        <div id="taskContent" class="task-content">👈 Velg nivå for å begynne.</div>
+        <p id="taskInstruction"></p>
+        <div id="taskContent" class="task-content"></div>
         <div id="answerButtons" class="answer-buttons"></div>
         <p id="feedback" class="feedback" aria-live="assertive"></p>
-        <button id="nextTask" class="primary" disabled>Neste oppgave</button>
+        <div class="task-actions">
+          <button id="backToLevelsBtn" class="secondary">Til nivåvalg</button>
+          <button id="nextTask" class="primary" disabled>Neste oppgave</button>
+        </div>
       </main>
-
-      <section class="levels card">
-        <h2>Historikk</h2>
-        <p class="small">Her ser du dine siste fullførte nivåer.</p>
-        <ul id="historyList" class="history-list"></ul>
-      </section>
     </section>
   </div>
 
   <div id="rewardAnimation" class="reward-animation" aria-hidden="true">✨ Bra jobbet! ✨</div>
-
   <script src="app.js"></script>
 </body>
 </html>

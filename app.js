@@ -1,4 +1,4 @@
-const STORAGE_KEY = "lesestjerner-profiles-v2";
+const STORAGE_KEY = "lesestjerner-profiles-v3";
 
 const levels = [
   {
@@ -20,45 +20,17 @@ const levels = [
   {
     name: "Setningsforståelse",
     tasks: [
-      {
-        prompt: "Les: 'Ali har en blå ball.' Hvilken farge har ballen?",
-        choices: ["Blå", "Grønn", "Rød"],
-        answer: "Blå"
-      },
-      {
-        prompt: "Les: 'Katten sover i stolen.' Hvor sover katten?",
-        choices: ["I stolen", "I bilen", "På taket"],
-        answer: "I stolen"
-      },
-      {
-        prompt: "Les: 'Sara løper fort til skolen.' Hva gjør Sara?",
-        choices: ["Løper", "Sover", "Spiser"],
-        answer: "Løper"
-      }
+      { prompt: "Les: 'Ali har en blå ball.' Hvilken farge har ballen?", choices: ["Blå", "Grønn", "Rød"], answer: "Blå" },
+      { prompt: "Les: 'Katten sover i stolen.' Hvor sover katten?", choices: ["I stolen", "I bilen", "På taket"], answer: "I stolen" },
+      { prompt: "Les: 'Sara løper fort til skolen.' Hva gjør Sara?", choices: ["Løper", "Sover", "Spiser"], answer: "Løper" }
     ]
   },
   {
     name: "Enkle leseoppgaver",
     tasks: [
-      {
-        prompt: "Les og velg riktig slutt: 'Jeg pusser ____ før jeg legger meg.'",
-        choices: ["tennene", "taket", "jakken"],
-        answer: "tennene"
-      },
-      {
-        prompt: "Hvilken setning er riktig?",
-        choices: [
-          "Solen skinner på himmelen.",
-          "Solen spiser en stol.",
-          "Solen sover i skoen."
-        ],
-        answer: "Solen skinner på himmelen."
-      },
-      {
-        prompt: "Velg ordet som passer: 'Vi leser en ____ sammen.'",
-        choices: ["bok", "sky", "sykkel"],
-        answer: "bok"
-      }
+      { prompt: "Les og velg riktig slutt: 'Jeg pusser ____ før jeg legger meg.'", choices: ["tennene", "taket", "jakken"], answer: "tennene" },
+      { prompt: "Hvilken setning er riktig?", choices: ["Solen skinner på himmelen.", "Solen spiser en stol.", "Solen sover i skoen."], answer: "Solen skinner på himmelen." },
+      { prompt: "Velg ordet som passer: 'Vi leser en ____ sammen.'", choices: ["bok", "sky", "sykkel"], answer: "bok" }
     ]
   }
 ];
@@ -71,50 +43,56 @@ const badgeMilestones = [
 ];
 
 const el = {
-  authCard: document.getElementById("authCard"),
-  gameShell: document.getElementById("gameShell"),
+  loginView: document.getElementById("loginView"),
+  levelView: document.getElementById("levelView"),
+  taskView: document.getElementById("taskView"),
   usernameInput: document.getElementById("usernameInput"),
   passwordInput: document.getElementById("passwordInput"),
   createProfileBtn: document.getElementById("createProfileBtn"),
   loginBtn: document.getElementById("loginBtn"),
   authFeedback: document.getElementById("authFeedback"),
   logoutBtn: document.getElementById("logoutBtn"),
-  activeUser: document.getElementById("activeUser"),
-  levelStatus: document.getElementById("levelStatus"),
+  activeUserLevel: document.getElementById("activeUserLevel"),
+  activeUserTask: document.getElementById("activeUserTask"),
   levelButtons: document.getElementById("levelButtons"),
-  starCount: document.getElementById("starCount"),
-  badgeCount: document.getElementById("badgeCount"),
-  progressBar: document.getElementById("progressBar"),
-  badgeShelf: document.getElementById("badgeShelf"),
+  historyList: document.getElementById("historyList"),
+  resetProgress: document.getElementById("resetProgress"),
   taskTitle: document.getElementById("taskTitle"),
   taskInstruction: document.getElementById("taskInstruction"),
   taskContent: document.getElementById("taskContent"),
   answerButtons: document.getElementById("answerButtons"),
   feedback: document.getElementById("feedback"),
   nextTask: document.getElementById("nextTask"),
+  backToLevelsBtn: document.getElementById("backToLevelsBtn"),
   rewardAnimation: document.getElementById("rewardAnimation"),
-  historyList: document.getElementById("historyList"),
-  resetProgress: document.getElementById("resetProgress")
+  progress: {
+    level: {
+      stars: document.getElementById("starCountLevel"),
+      badges: document.getElementById("badgeCountLevel"),
+      bar: document.getElementById("progressBarLevel"),
+      shelf: document.getElementById("badgeShelfLevel")
+    },
+    task: {
+      stars: document.getElementById("starCountTask"),
+      badges: document.getElementById("badgeCountTask"),
+      bar: document.getElementById("progressBarTask"),
+      shelf: document.getElementById("badgeShelfTask")
+    }
+  }
 };
 
 const appState = {
-  profiles: loadProfiles(),
+  data: loadData(),
   activeUser: null,
   selectedLevel: null,
   taskIndex: 0
 };
 
 function blankProgress() {
-  return {
-    stars: 0,
-    badges: [],
-    unlockedLevels: [0],
-    completedLevels: [],
-    history: []
-  };
+  return { stars: 0, badges: [], unlockedLevels: [0], completedLevels: [], history: [] };
 }
 
-function loadProfiles() {
+function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : { activeUser: null, users: {} };
@@ -123,8 +101,21 @@ function loadProfiles() {
   }
 }
 
-function saveProfiles() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.profiles));
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.data));
+}
+
+function setView(view) {
+  el.loginView.hidden = view !== "login";
+  el.levelView.hidden = view !== "levels";
+  el.taskView.hidden = view !== "task";
+}
+
+function progressForActiveUser() {
+  if (!appState.activeUser) return null;
+  const user = appState.data.users[appState.activeUser];
+  if (!user.progress) user.progress = blankProgress();
+  return user.progress;
 }
 
 function setAuthFeedback(message, type = "good") {
@@ -132,7 +123,7 @@ function setAuthFeedback(message, type = "good") {
   el.authFeedback.className = `feedback ${type}`;
 }
 
-function getAuthValues() {
+function authValues() {
   return {
     username: el.usernameInput.value.trim(),
     password: el.passwordInput.value
@@ -140,38 +131,33 @@ function getAuthValues() {
 }
 
 function createProfile() {
-  const { username, password } = getAuthValues();
+  const { username, password } = authValues();
   if (!username || !password) {
     setAuthFeedback("Skriv både brukernavn og passord.", "bad");
     return;
   }
-
-  if (appState.profiles.users[username]) {
+  if (appState.data.users[username]) {
     setAuthFeedback("Brukernavn finnes allerede. Prøv å logge inn.", "bad");
     return;
   }
 
-  appState.profiles.users[username] = {
-    password,
-    progress: blankProgress()
-  };
-  appState.profiles.activeUser = username;
-  saveProfiles();
+  appState.data.users[username] = { password, progress: blankProgress() };
+  appState.data.activeUser = username;
+  saveData();
   loginUser(username);
-  showReward("Profil opprettet! Velkommen 🌟");
+  showReward("Profil opprettet! 🌟");
 }
 
 function loginProfile() {
-  const { username, password } = getAuthValues();
-  const user = appState.profiles.users[username];
-
+  const { username, password } = authValues();
+  const user = appState.data.users[username];
   if (!user || user.password !== password) {
     setAuthFeedback("Feil brukernavn eller passord.", "bad");
     return;
   }
 
-  appState.profiles.activeUser = username;
-  saveProfiles();
+  appState.data.activeUser = username;
+  saveData();
   loginUser(username);
   showReward("Innlogging vellykket 👋");
 }
@@ -180,87 +166,68 @@ function loginUser(username) {
   appState.activeUser = username;
   appState.selectedLevel = null;
   appState.taskIndex = 0;
-  el.activeUser.textContent = username;
-  el.authCard.hidden = true;
-  el.gameShell.hidden = false;
   el.logoutBtn.hidden = false;
+  el.activeUserLevel.textContent = username;
+  el.activeUserTask.textContent = username;
   el.usernameInput.value = "";
   el.passwordInput.value = "";
   setAuthFeedback("");
-  renderAll();
+  renderLevelPage();
+  setView("levels");
 }
 
 function logoutUser() {
   appState.activeUser = null;
   appState.selectedLevel = null;
   appState.taskIndex = 0;
-  appState.profiles.activeUser = null;
-  saveProfiles();
-
-  el.gameShell.hidden = true;
-  el.authCard.hidden = false;
+  appState.data.activeUser = null;
+  saveData();
   el.logoutBtn.hidden = true;
+  setView("login");
   setAuthFeedback("Du er logget ut.", "good");
 }
 
-function activeProgress() {
-  if (!appState.activeUser) return null;
-  const user = appState.profiles.users[appState.activeUser];
-  if (!user.progress) user.progress = blankProgress();
-  return user.progress;
-}
+function renderProgressWidgets() {
+  const progress = progressForActiveUser();
+  const totalTasks = levels.reduce((sum, level) => sum + level.tasks.length, 0);
+  const doneTasks = progress.completedLevels.reduce((sum, idx) => sum + levels[idx].tasks.length, 0);
+  const percentage = Math.round((doneTasks / totalTasks) * 100);
+  const badgeText = progress.badges.length
+    ? `Dine merker: ${progress.badges.join(" • ")}`
+    : "Ingen merker ennå. Spill for å tjene dine første!";
 
-function currentTask() {
-  if (appState.selectedLevel === null) return null;
-  return levels[appState.selectedLevel].tasks[appState.taskIndex];
-}
-
-function renderLevelButtons() {
-  const progress = activeProgress();
-  el.levelButtons.innerHTML = "";
-
-  levels.forEach((level, index) => {
-    const button = document.createElement("button");
-    const unlocked = progress.unlockedLevels.includes(index);
-    const lockedBySelection = appState.selectedLevel !== null && appState.selectedLevel !== index;
-    button.className = "secondary level-button";
-    button.textContent = `Nivå ${index + 1}: ${level.name}`;
-    button.disabled = !unlocked || lockedBySelection;
-
-    if (appState.selectedLevel === index) {
-      button.classList.add("active");
-    }
-
-    button.addEventListener("click", () => selectLevel(index));
-    el.levelButtons.appendChild(button);
+  [el.progress.level, el.progress.task].forEach((widget) => {
+    widget.stars.textContent = String(progress.stars);
+    widget.badges.textContent = String(progress.badges.length);
+    widget.bar.style.width = `${percentage}%`;
+    widget.shelf.textContent = badgeText;
   });
 }
 
-function renderProgress() {
-  const progress = activeProgress();
-  el.starCount.textContent = String(progress.stars);
-  el.badgeCount.textContent = String(progress.badges.length);
+function renderLevelButtons() {
+  const progress = progressForActiveUser();
+  el.levelButtons.innerHTML = "";
 
-  const totalTasks = levels.reduce((sum, level) => sum + level.tasks.length, 0);
-  const completedTasks = progress.completedLevels.reduce(
-    (sum, levelIndex) => sum + levels[levelIndex].tasks.length,
-    0
-  );
-  const percentage = Math.round((completedTasks / totalTasks) * 100);
-  el.progressBar.style.width = `${percentage}%`;
-
-  el.badgeShelf.textContent = progress.badges.length
-    ? `Dine merker: ${progress.badges.join(" • ")}`
-    : "Ingen merker ennå. Spill for å tjene dine første!";
+  levels.forEach((level, index) => {
+    const btn = document.createElement("button");
+    btn.className = "secondary level-button";
+    const unlocked = progress.unlockedLevels.includes(index);
+    const completed = progress.completedLevels.includes(index);
+    btn.disabled = !unlocked;
+    btn.textContent = completed
+      ? `✅ Nivå ${index + 1}: ${level.name}`
+      : `Nivå ${index + 1}: ${level.name}`;
+    btn.addEventListener("click", () => startLevel(index));
+    el.levelButtons.appendChild(btn);
+  });
 }
 
 function renderHistory() {
-  const progress = activeProgress();
+  const progress = progressForActiveUser();
   el.historyList.innerHTML = "";
-
   if (progress.history.length === 0) {
     const li = document.createElement("li");
-    li.textContent = "Ingen historikk ennå. Fullfør et nivå for å få første linje.";
+    li.textContent = "Ingen historikk ennå.";
     el.historyList.appendChild(li);
     return;
   }
@@ -272,44 +239,43 @@ function renderHistory() {
   });
 }
 
-function renderTask() {
-  if (appState.selectedLevel === null) {
-    el.taskTitle.textContent = "Oppgave";
-    el.taskInstruction.textContent = "Velg et nivå først.";
-    el.taskContent.textContent = "👈 Velg nivå for å begynne.";
-    el.answerButtons.innerHTML = "";
-    el.feedback.textContent = "";
-    el.nextTask.disabled = true;
-    el.levelStatus.textContent = "Velg et nivå for å starte.";
-    return;
-  }
+function renderLevelPage() {
+  renderProgressWidgets();
+  renderLevelButtons();
+  renderHistory();
+}
 
+function currentTask() {
+  return levels[appState.selectedLevel].tasks[appState.taskIndex];
+}
+
+function startLevel(levelIndex) {
+  appState.selectedLevel = levelIndex;
+  appState.taskIndex = 0;
+  renderTaskPage();
+  setView("task");
+}
+
+function renderTaskPage() {
   const level = levels[appState.selectedLevel];
   const task = currentTask();
-
   el.taskTitle.textContent = `Nivå ${appState.selectedLevel + 1}: ${level.name}`;
   el.taskInstruction.textContent = `Oppgave ${appState.taskIndex + 1} av ${level.tasks.length}`;
-  el.levelStatus.textContent = `Du spiller nivå ${appState.selectedLevel + 1}. Fullfør nivået før du velger et nytt.`;
   el.taskContent.textContent = task.prompt;
   el.feedback.textContent = "";
   el.feedback.className = "feedback";
   el.nextTask.disabled = true;
-
   el.answerButtons.innerHTML = "";
-  task.choices.forEach((choice) => {
-    const button = document.createElement("button");
-    button.className = "answer";
-    button.textContent = choice;
-    button.addEventListener("click", () => handleAnswer(button, choice));
-    el.answerButtons.appendChild(button);
-  });
-}
 
-function selectLevel(levelIndex) {
-  appState.selectedLevel = levelIndex;
-  appState.taskIndex = 0;
-  renderLevelButtons();
-  renderTask();
+  task.choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "answer";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => handleAnswer(btn, choice));
+    el.answerButtons.appendChild(btn);
+  });
+
+  renderProgressWidgets();
 }
 
 function earnBadges(progress) {
@@ -322,7 +288,7 @@ function earnBadges(progress) {
 }
 
 function handleAnswer(button, choice) {
-  const progress = activeProgress();
+  const progress = progressForActiveUser();
   const buttons = [...el.answerButtons.querySelectorAll("button")];
   buttons.forEach((btn) => (btn.disabled = true));
 
@@ -330,7 +296,7 @@ function handleAnswer(button, choice) {
   if (choice === correct) {
     button.classList.add("correct");
     progress.stars += 1;
-    el.feedback.textContent = "Supert! Det var riktig 🎉";
+    el.feedback.textContent = "Supert! Riktig svar 🎉";
     el.feedback.classList.add("good");
     showReward("Stjerne vunnet! ⭐");
     earnBadges(progress);
@@ -342,66 +308,60 @@ function handleAnswer(button, choice) {
     el.feedback.classList.add("bad");
   }
 
+  saveData();
+  renderProgressWidgets();
   el.nextTask.disabled = false;
-  saveProfiles();
-  renderProgress();
 }
 
-function recordHistory(text) {
-  const progress = activeProgress();
-  const when = new Date().toLocaleString("no-NO");
-  progress.history.push({ when, text });
+function addHistory(text) {
+  const progress = progressForActiveUser();
+  progress.history.push({ when: new Date().toLocaleString("no-NO"), text });
 }
 
-function goToNextTask() {
-  if (appState.selectedLevel === null) return;
+function goNextTask() {
+  const progress = progressForActiveUser();
+  const levelTasks = levels[appState.selectedLevel].tasks;
+  const atLast = appState.taskIndex >= levelTasks.length - 1;
 
-  const progress = activeProgress();
-  const level = levels[appState.selectedLevel];
-  const isLastTaskInLevel = appState.taskIndex >= level.tasks.length - 1;
-
-  if (!isLastTaskInLevel) {
+  if (!atLast) {
     appState.taskIndex += 1;
-    renderTask();
+    renderTaskPage();
     return;
   }
 
-  const completed = appState.selectedLevel;
-  if (!progress.completedLevels.includes(completed)) {
-    progress.completedLevels.push(completed);
+  const finishedLevel = appState.selectedLevel;
+  if (!progress.completedLevels.includes(finishedLevel)) {
+    progress.completedLevels.push(finishedLevel);
   }
 
-  const nextLevel = completed + 1;
+  const nextLevel = finishedLevel + 1;
   if (levels[nextLevel] && !progress.unlockedLevels.includes(nextLevel)) {
     progress.unlockedLevels.push(nextLevel);
   }
 
-  recordHistory(`Fullførte nivå ${completed + 1}: ${levels[completed].name}`);
-  showReward(`Nivå ${completed + 1} fullført! Velg neste nivå 🚀`);
-
+  addHistory(`Fullførte nivå ${finishedLevel + 1}: ${levels[finishedLevel].name}`);
+  saveData();
   appState.selectedLevel = null;
   appState.taskIndex = 0;
-
-  saveProfiles();
-  renderAll();
+  renderLevelPage();
+  setView("levels");
+  showReward(`Nivå ${finishedLevel + 1} fullført! Velg neste nivå 🚀`);
 }
 
-function resetAllProgress() {
-  const user = appState.profiles.users[appState.activeUser];
+function backToLevels() {
+  appState.selectedLevel = null;
+  appState.taskIndex = 0;
+  renderLevelPage();
+  setView("levels");
+}
+
+function resetProgress() {
+  const user = appState.data.users[appState.activeUser];
   user.progress = blankProgress();
-  recordHistory("Fremgang nullstilt");
-  appState.selectedLevel = null;
-  appState.taskIndex = 0;
-  saveProfiles();
-  renderAll();
-  showReward("Fremgang nullstilt. Klar for ny runde! 🔄");
-}
-
-function renderAll() {
-  renderProgress();
-  renderLevelButtons();
-  renderTask();
-  renderHistory();
+  user.progress.history.push({ when: new Date().toLocaleString("no-NO"), text: "Fremgang nullstilt" });
+  saveData();
+  renderLevelPage();
+  showReward("Fremgang nullstilt 🔄");
 }
 
 function showReward(message) {
@@ -413,9 +373,12 @@ function showReward(message) {
 el.createProfileBtn.addEventListener("click", createProfile);
 el.loginBtn.addEventListener("click", loginProfile);
 el.logoutBtn.addEventListener("click", logoutUser);
-el.nextTask.addEventListener("click", goToNextTask);
-el.resetProgress.addEventListener("click", resetAllProgress);
+el.nextTask.addEventListener("click", goNextTask);
+el.backToLevelsBtn.addEventListener("click", backToLevels);
+el.resetProgress.addEventListener("click", resetProgress);
 
-if (appState.profiles.activeUser && appState.profiles.users[appState.profiles.activeUser]) {
-  loginUser(appState.profiles.activeUser);
+if (appState.data.activeUser && appState.data.users[appState.data.activeUser]) {
+  loginUser(appState.data.activeUser);
+} else {
+  setView("login");
 }
