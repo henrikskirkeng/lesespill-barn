@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lesestjerner – Lesespill for barn</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" role="application" aria-label="Lesestjerner spill">
+    <header class="topbar card">
+      <div>
+        <h1>🌟 Lesestjerner</h1>
+        <p class="subtitle">Lær å lese med morsomme oppgaver!</p>
+      </div>
+      <button id="resetProgress" class="secondary" aria-label="Nullstill fremgang">Nullstill</button>
+    </header>
+
+    <section class="progress card" aria-live="polite">
+      <h2>Din utvikling</h2>
+      <div class="stats">
+        <p><strong>Nivå:</strong> <span id="playerLevel">1</span></p>
+        <p><strong>Stjerner:</strong> <span id="starCount">0</span> ⭐</p>
+        <p><strong>Merker:</strong> <span id="badgeCount">0</span> 🏅</p>
+      </div>
+      <div class="bar-wrap" aria-label="Total progresjon">
+        <div id="progressBar" class="bar"></div>
+      </div>
+      <p id="badgeShelf" class="badge-shelf">Ingen merker ennå. Spill for å tjene dine første!</p>
+    </section>
+
+    <main class="game card">
+      <h2 id="taskTitle">Oppgave 1</h2>
+      <p id="taskInstruction">Trykk på riktig svar.</p>
+      <div id="taskContent" class="task-content"></div>
+      <div id="answerButtons" class="answer-buttons"></div>
+      <p id="feedback" class="feedback" aria-live="assertive"></p>
+      <button id="nextTask" class="primary" disabled>Neste oppgave</button>
+    </main>
+
+    <section class="levels card">
+      <h2>Nivåer</h2>
+      <ol>
+        <li><strong>Nivå 1:</strong> Bokstavgjenkjenning</li>
+        <li><strong>Nivå 2:</strong> Ordlesing</li>
+        <li><strong>Nivå 3:</strong> Setningsforståelse</li>
+        <li><strong>Nivå 4:</strong> Enkle leseoppgaver</li>
+      </ol>
+      <p class="small">Tips: Bruk fingertuppen og lytt til instruksjonen sammen med en voksen ved behov.</p>
+    </section>
+  </div>
+
+  <div id="rewardAnimation" class="reward-animation" aria-hidden="true">✨ Bra jobbet! ✨</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
