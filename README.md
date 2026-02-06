@@ -1,11 +1,14 @@
 # Lesestjerner
 
-Et nettbasert, berøringsvennlig lesespill for barn (6–10 år) med fysiske sider (egne URL-er):
+Et nettbasert, berøringsvennlig læringsspill for barn (6–10 år) med fysiske sider (egne URL-er):
 
 - `login.html` for navn + Start
-- `levels.html` for nivåvalg og historikk
+- `levels.html` for kategori- og nivåvalg, samt historikk
 - `task.html` for oppgaveløsing
-- progresjon synlig både på `levels.html` og `task.html`
+- 3 kategorier: **Norsk**, **Engelsk** og **Matematikk**
+- automatisk overgang til neste oppgave ved riktig svar
+- feil svar markeres rødt og barnet kan prøve igjen
+- progresjon synlig på både `levels.html` og `task.html`
 - progresjon/historikk lagres per navn i `localStorage`
 
 ## Kjør lokalt

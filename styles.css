@@ -96,3 +96,12 @@ button.secondary { background: #edf2ff; color: #234; }
   .app { grid-template-columns: 1fr 1fr; }
   .topbar,.view { grid-column: span 2; }
 }
+
+
+.active-category {
+  outline: 3px solid #8cb0ff;
+}
+
+.task-actions-single {
+  grid-template-columns: 1fr;
+}

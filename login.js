@@ -21,6 +21,10 @@ startBtn.addEventListener("click", () => {
   data.activeUser = name;
   saveData(data);
 
+  sessionStorage.removeItem("lesestjerner-current-category");
+  sessionStorage.removeItem("lesestjerner-current-level");
+  sessionStorage.removeItem("lesestjerner-current-task");
+
   window.location.href = "levels.html";
 });
 
