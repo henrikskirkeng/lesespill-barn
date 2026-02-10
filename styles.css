@@ -144,3 +144,15 @@ button.secondary { background: #edf2ff; color: #234; }
 .selected-word {
   outline: 3px solid #8cb0ff;
 }
+
+.icon-item {
+  min-height: 72px;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-emoji {
+  line-height: 1;
+}

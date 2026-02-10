@@ -15,10 +15,10 @@ const gameCategories = {
               { id: "S", label: "S-kassen" }
             ],
             items: [
-              { word: "Bil", binId: "B" },
-              { word: "Bamse", binId: "B" },
-              { word: "Sol", binId: "S" },
-              { word: "Sekk", binId: "S" }
+              { id: "bil", label: "Bil", icon: "🚗", binId: "B" },
+              { id: "bamse", label: "Bamse", icon: "🧸", binId: "B" },
+              { id: "sol", label: "Sol", icon: "☀️", binId: "S" },
+              { id: "sekk", label: "Sekk", icon: "🎒", binId: "S" }
             ]
           },
           { prompt: "Trykk på bokstaven A", choices: ["A", "O", "M"], answer: "A" },

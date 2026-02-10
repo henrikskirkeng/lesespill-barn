@@ -102,7 +102,8 @@ function onMultipleChoiceAnswer(button, choice, task) {
 }
 
 function handleDropToBin(wordButton, binId, task, progress, ctx) {
-  const target = task.items.find((item) => item.word === wordButton.textContent);
+  const targetId = wordButton.dataset.itemId;
+  const target = task.items.find((item) => item.id === targetId);
   if (!target) return;
 
   if (target.binId === binId) {
@@ -154,9 +155,16 @@ function renderSortTask(task) {
 
   task.items.forEach((item) => {
     const wordBtn = document.createElement("button");
-    wordBtn.className = "answer";
-    wordBtn.textContent = item.word;
+    wordBtn.className = "answer icon-item";
+    wordBtn.dataset.itemId = item.id;
     wordBtn.draggable = true;
+    wordBtn.setAttribute("aria-label", item.label);
+    wordBtn.title = item.label;
+
+    const icon = document.createElement("span");
+    icon.className = "icon-emoji";
+    icon.textContent = item.icon;
+    wordBtn.appendChild(icon);
 
     wordBtn.addEventListener("dragstart", () => {
       selectedWordButton = wordBtn;
@@ -167,7 +175,7 @@ function renderSortTask(task) {
       selectedWordButton = wordBtn;
       [...itemsWrap.querySelectorAll("button")].forEach((btn) => btn.classList.remove("selected-word"));
       wordBtn.classList.add("selected-word");
-      el.feedback.textContent = `Valgt ord: ${item.word}. Trykk på riktig bokstav-kasse.`;
+      el.feedback.textContent = `Valgt ikon. Trykk på riktig bokstav-kasse.`;
       el.feedback.className = "feedback";
     });
 
@@ -211,7 +219,7 @@ function renderSortTask(task) {
   panel.appendChild(binsWrap);
   el.answerButtons.appendChild(panel);
 
-  el.feedback.textContent = `Sorter ${task.items.length} ord i riktig bokstav-kasse.`;
+  el.feedback.textContent = `Sorter ${task.items.length} ikoner i riktig bokstav-kasse.`;
   el.feedback.className = "feedback";
 }
 
