@@ -105,3 +105,42 @@ button.secondary { background: #edf2ff; color: #234; }
 .task-actions-single {
   grid-template-columns: 1fr;
 }
+
+.sort-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.sort-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.sort-bins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.sort-bin {
+  border: 2px dashed #9fb6ef;
+  border-radius: 12px;
+  background: #f6f9ff;
+  min-height: 110px;
+  padding: 8px;
+}
+
+.sort-bin h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.sort-bin-words {
+  display: grid;
+  gap: 6px;
+}
+
+.selected-word {
+  outline: 3px solid #8cb0ff;
+}

@@ -1,14 +1,27 @@
-const STORAGE_KEY = "lesestjerner-profiles-v6";
+const STORAGE_KEY = "lesestjerner-profiles-v7";
 
 const gameCategories = {
   norsk: {
     title: "Norsk",
     levels: [
       {
-        name: "Bokstavgjenkjenning",
+        name: "Bokstavsortering",
         tasks: [
+          {
+            type: "sort",
+            prompt: "Dra ordene til riktig bokstav-kasse ut fra første bokstav.",
+            bins: [
+              { id: "B", label: "B-kassen" },
+              { id: "S", label: "S-kassen" }
+            ],
+            items: [
+              { word: "Bil", binId: "B" },
+              { word: "Bamse", binId: "B" },
+              { word: "Sol", binId: "S" },
+              { word: "Sekk", binId: "S" }
+            ]
+          },
           { prompt: "Trykk på bokstaven A", choices: ["A", "O", "M"], answer: "A" },
-          { prompt: "Hvilken bokstav lager lyden b?", choices: ["D", "B", "P"], answer: "B" },
           { prompt: "Finn bokstaven S", choices: ["S", "F", "T"], answer: "S" }
         ]
       },
@@ -73,12 +86,11 @@ const badgeMilestones = [
 ];
 
 function blankCategoryProgress(categoryKey) {
-  const levelCount = gameCategories[categoryKey].levels.length;
   return {
     unlockedLevels: [0],
     completedLevels: [],
     history: [],
-    levelCount
+    levelCount: gameCategories[categoryKey].levels.length
   };
 }
 
@@ -129,16 +141,12 @@ function getActiveUserData() {
 }
 
 function progressPercent(progress) {
-  const totalTasks = Object.values(gameCategories)
-    .flatMap((cat) => cat.levels)
-    .reduce((sum, level) => sum + level.tasks.length, 0);
-
+  const totalTasks = Object.values(gameCategories).flatMap((cat) => cat.levels).reduce((sum, level) => sum + level.tasks.length, 0);
   const completedTasks = Object.keys(gameCategories).reduce((sum, key) => {
     const category = gameCategories[key];
     const catProgress = progress.categories[key] || blankCategoryProgress(key);
     return sum + catProgress.completedLevels.reduce((inner, levelIndex) => inner + category.levels[levelIndex].tasks.length, 0);
   }, 0);
-
   return Math.round((completedTasks / totalTasks) * 100);
 }
 

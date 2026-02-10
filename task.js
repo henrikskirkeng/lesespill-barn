@@ -14,19 +14,20 @@ const el = {
   rewardAnimation: document.getElementById("rewardAnimation")
 };
 
+const categoryKey = sessionStorage.getItem("lesestjerner-current-category");
+let levelIndex = Number(sessionStorage.getItem("lesestjerner-current-level"));
+let taskIndex = Number(sessionStorage.getItem("lesestjerner-current-task") || "0");
+let selectedWordButton = null;
+
+if (!getActiveUserData()) window.location.href = "login.html";
+if (!categoryKey || !gameCategories[categoryKey]) window.location.href = "levels.html";
+if (Number.isNaN(levelIndex) || !gameCategories[categoryKey].levels[levelIndex]) window.location.href = "levels.html";
+
 function showReward(message) {
   el.rewardAnimation.textContent = message;
   el.rewardAnimation.classList.add("show");
   window.setTimeout(() => el.rewardAnimation.classList.remove("show"), 1400);
 }
-
-const categoryKey = sessionStorage.getItem("lesestjerner-current-category");
-let levelIndex = Number(sessionStorage.getItem("lesestjerner-current-level"));
-let taskIndex = Number(sessionStorage.getItem("lesestjerner-current-task") || "0");
-
-if (!getActiveUserData()) window.location.href = "login.html";
-if (!categoryKey || !gameCategories[categoryKey]) window.location.href = "levels.html";
-if (Number.isNaN(levelIndex) || !gameCategories[categoryKey].levels[levelIndex]) window.location.href = "levels.html";
 
 function renderProgress(progress, name) {
   el.activeUser.textContent = name;
@@ -38,31 +39,7 @@ function renderProgress(progress, name) {
     : "Ingen merker ennå. Spill for å tjene dine første!";
 }
 
-function renderTask() {
-  const ctx = getActiveUserData();
-  if (!ctx) return;
-
-  const level = gameCategories[categoryKey].levels[levelIndex];
-  const task = level.tasks[taskIndex];
-  renderProgress(ctx.progress, ctx.name);
-
-  el.taskTitle.textContent = `${gameCategories[categoryKey].title} – Nivå ${levelIndex + 1}: ${level.name}`;
-  el.taskInstruction.textContent = `Oppgave ${taskIndex + 1} av ${level.tasks.length}`;
-  el.taskContent.textContent = task.prompt;
-  el.feedback.textContent = "";
-  el.feedback.className = "feedback";
-  el.answerButtons.innerHTML = "";
-
-  task.choices.forEach((choice) => {
-    const btn = document.createElement("button");
-    btn.className = "answer";
-    btn.textContent = choice;
-    btn.addEventListener("click", () => onAnswer(btn, choice));
-    el.answerButtons.appendChild(btn);
-  });
-}
-
-function advanceAfterCorrect() {
+function completeCurrentTask() {
   const ctx = getActiveUserData();
   const data = ctx.data;
   const progress = ctx.progress;
@@ -97,14 +74,12 @@ function advanceAfterCorrect() {
   window.location.href = "levels.html";
 }
 
-function onAnswer(button, choice) {
+function onMultipleChoiceAnswer(button, choice, task) {
   const ctx = getActiveUserData();
   const data = ctx.data;
   const progress = ctx.progress;
 
-  const current = gameCategories[categoryKey].levels[levelIndex].tasks[taskIndex];
-
-  if (choice === current.answer) {
+  if (choice === task.answer) {
     [...el.answerButtons.querySelectorAll("button")].forEach((btn) => (btn.disabled = true));
     button.classList.add("correct");
     progress.stars += 1;
@@ -116,7 +91,7 @@ function onAnswer(button, choice) {
 
     saveData(data);
     renderProgress(progress, ctx.name);
-    window.setTimeout(advanceAfterCorrect, 700);
+    window.setTimeout(completeCurrentTask, 650);
     return;
   }
 
@@ -124,6 +99,151 @@ function onAnswer(button, choice) {
   button.disabled = true;
   el.feedback.textContent = "Prøv igjen!";
   el.feedback.classList.add("bad");
+}
+
+function handleDropToBin(wordButton, binId, task, progress, ctx) {
+  const target = task.items.find((item) => item.word === wordButton.textContent);
+  if (!target) return;
+
+  if (target.binId === binId) {
+    wordButton.classList.remove("selected-word");
+    wordButton.classList.add("correct");
+    wordButton.disabled = true;
+    wordButton.draggable = false;
+    progress.stars += 1;
+
+    const binWords = el.answerButtons.querySelector(`[data-bin-words='${binId}']`);
+    if (binWords) binWords.appendChild(wordButton);
+
+    const sortedNow = el.answerButtons.querySelectorAll(".answer.correct").length;
+    el.feedback.textContent = `Riktig! ${sortedNow} av ${task.items.length} sortert.`;
+    el.feedback.className = "feedback good";
+
+    const newBadges = applyBadges(progress);
+    if (newBadges.length) showReward(`Nytt merke: ${newBadges.join(", ")} 🏅`);
+
+    saveData(ctx.data);
+    renderProgress(progress, ctx.name);
+
+    if (sortedNow >= task.items.length) {
+      showReward("Flott sortert! ✅");
+      window.setTimeout(completeCurrentTask, 700);
+    }
+    return;
+  }
+
+  wordButton.classList.add("wrong");
+  window.setTimeout(() => wordButton.classList.remove("wrong"), 450);
+  el.feedback.textContent = "Nesten! Prøv en annen bokstav-kasse.";
+  el.feedback.className = "feedback bad";
+}
+
+function renderSortTask(task) {
+  const ctx = getActiveUserData();
+  if (!ctx) return;
+  const progress = ctx.progress;
+
+  el.taskContent.textContent = `${task.prompt}`;
+  el.answerButtons.innerHTML = "";
+
+  const panel = document.createElement("div");
+  panel.className = "sort-panel";
+
+  const itemsWrap = document.createElement("div");
+  itemsWrap.className = "sort-items";
+
+  task.items.forEach((item) => {
+    const wordBtn = document.createElement("button");
+    wordBtn.className = "answer";
+    wordBtn.textContent = item.word;
+    wordBtn.draggable = true;
+
+    wordBtn.addEventListener("dragstart", () => {
+      selectedWordButton = wordBtn;
+    });
+
+    wordBtn.addEventListener("click", () => {
+      if (wordBtn.disabled) return;
+      selectedWordButton = wordBtn;
+      [...itemsWrap.querySelectorAll("button")].forEach((btn) => btn.classList.remove("selected-word"));
+      wordBtn.classList.add("selected-word");
+      el.feedback.textContent = `Valgt ord: ${item.word}. Trykk på riktig bokstav-kasse.`;
+      el.feedback.className = "feedback";
+    });
+
+    itemsWrap.appendChild(wordBtn);
+  });
+
+  const binsWrap = document.createElement("div");
+  binsWrap.className = "sort-bins";
+
+  task.bins.forEach((bin) => {
+    const box = document.createElement("div");
+    box.className = "sort-bin";
+    box.dataset.bin = bin.id;
+
+    const title = document.createElement("h3");
+    title.textContent = bin.label;
+
+    const words = document.createElement("div");
+    words.className = "sort-bin-words";
+    words.dataset.binWords = bin.id;
+
+    box.appendChild(title);
+    box.appendChild(words);
+
+    box.addEventListener("dragover", (event) => event.preventDefault());
+    box.addEventListener("drop", (event) => {
+      event.preventDefault();
+      if (!selectedWordButton) return;
+      handleDropToBin(selectedWordButton, bin.id, task, progress, ctx);
+    });
+
+    box.addEventListener("click", () => {
+      if (!selectedWordButton) return;
+      handleDropToBin(selectedWordButton, bin.id, task, progress, ctx);
+    });
+
+    binsWrap.appendChild(box);
+  });
+
+  panel.appendChild(itemsWrap);
+  panel.appendChild(binsWrap);
+  el.answerButtons.appendChild(panel);
+
+  el.feedback.textContent = `Sorter ${task.items.length} ord i riktig bokstav-kasse.`;
+  el.feedback.className = "feedback";
+}
+
+function renderTask() {
+  const ctx = getActiveUserData();
+  if (!ctx) return;
+
+  const level = gameCategories[categoryKey].levels[levelIndex];
+  const task = level.tasks[taskIndex];
+  selectedWordButton = null;
+
+  renderProgress(ctx.progress, ctx.name);
+  el.taskTitle.textContent = `${gameCategories[categoryKey].title} – Nivå ${levelIndex + 1}: ${level.name}`;
+  el.taskInstruction.textContent = `Oppgave ${taskIndex + 1} av ${level.tasks.length}`;
+  el.taskContent.textContent = "";
+  el.feedback.textContent = "";
+  el.feedback.className = "feedback";
+
+  if (task.type === "sort") {
+    renderSortTask(task);
+    return;
+  }
+
+  el.taskContent.textContent = task.prompt;
+  el.answerButtons.innerHTML = "";
+  task.choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "answer";
+    btn.textContent = choice;
+    btn.addEventListener("click", () => onMultipleChoiceAnswer(btn, choice, task));
+    el.answerButtons.appendChild(btn);
+  });
 }
 
 el.backToLevelsBtn.addEventListener("click", () => {
