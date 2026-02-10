@@ -1,4 +1,4 @@
-const STORAGE_KEY = "lesestjerner-profiles-v8";
+const STORAGE_KEY = "lesestjerner-autostart-v1";
 
 const gameData = {
   title: "Norsk",
@@ -56,42 +56,44 @@ const badgeMilestones = [
 
 function blankProgress() {
   return {
+    playerName: "Spiller",
     stars: 0,
     badges: [],
-    unlockedParts: [0],
     completedParts: [],
-    history: []
+    history: [],
+    currentPart: 0,
+    currentStep: 0
   };
 }
 
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { activeUser: null, users: {} };
+    return raw ? JSON.parse(raw) : blankProgress();
   } catch {
-    return { activeUser: null, users: {} };
+    return blankProgress();
   }
 }
 
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+function saveData(progress) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
 function normalizeProgress(progress) {
+  if (typeof progress.playerName !== "string") progress.playerName = "Spiller";
   if (typeof progress.stars !== "number") progress.stars = 0;
   if (!Array.isArray(progress.badges)) progress.badges = [];
-  if (!Array.isArray(progress.unlockedParts)) progress.unlockedParts = [0];
   if (!Array.isArray(progress.completedParts)) progress.completedParts = [];
   if (!Array.isArray(progress.history)) progress.history = [];
+  if (typeof progress.currentPart !== "number") progress.currentPart = 0;
+  if (typeof progress.currentStep !== "number") progress.currentStep = 0;
 }
 
-function getActiveUserData() {
-  const data = loadData();
-  if (!data.activeUser || !data.users[data.activeUser]) return null;
-  if (!data.users[data.activeUser].progress) data.users[data.activeUser].progress = blankProgress();
-  normalizeProgress(data.users[data.activeUser].progress);
-  saveData(data);
-  return { data, name: data.activeUser, progress: data.users[data.activeUser].progress };
+function getProgress() {
+  const progress = loadData();
+  normalizeProgress(progress);
+  saveData(progress);
+  return progress;
 }
 
 function progressPercent(progress) {

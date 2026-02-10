@@ -1,10 +1,6 @@
 # Lesestjerner (Norsk)
 
-Et nettbasert, berøringsvennlig norskspill for barn (6–10 år) med egne URL-sider:
-
-- `login.html` for navn + Start
-- `levels.html` for valg av spilldel og historikk
-- `task.html` for oppgaveløsing
+Spillet starter med en gang på `task.html` (ingen innlogging, nivå- eller kategorivalg).
 
 ## Spillet har 3 deler
 
@@ -15,7 +11,8 @@ Et nettbasert, berøringsvennlig norskspill for barn (6–10 år) med egne URL-s
 Funksjoner:
 
 - umiddelbare tilbakemeldinger
-- progresjon og historikk lagres per navn i `localStorage`
+- automatisk videreføring mellom deler
+- progresjon lagres i `localStorage`
 - stjerner og merker
 
 ## Kjør lokalt
@@ -24,4 +21,4 @@ Funksjoner:
 python3 -m http.server 4173
 ```
 
-Åpne `http://localhost:4173` (videresender til `login.html`).
+Åpne `http://localhost:4173` (videresender til `task.html`).
