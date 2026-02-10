@@ -1,16 +1,22 @@
-# Lesestjerner
+# Lesestjerner (Norsk)
 
-Et nettbasert, berøringsvennlig læringsspill for barn (6–10 år) med fysiske sider (egne URL-er):
+Et nettbasert, berøringsvennlig norskspill for barn (6–10 år) med egne URL-sider:
 
 - `login.html` for navn + Start
-- `levels.html` for kategori- og nivåvalg, samt historikk
+- `levels.html` for valg av spilldel og historikk
 - `task.html` for oppgaveløsing
-- 3 kategorier: **Norsk**, **Engelsk** og **Matematikk**
-- interaktivt kategoriseringsspill med dra-og-slipp i Norsk (sorter ikoner/bilder i bokstav-kasser)
-- automatisk overgang til neste oppgave ved riktig svar
-- feil svar markeres rødt og barnet kan prøve igjen
-- progresjon synlig på både `levels.html` og `task.html`
-- progresjon/historikk lagres per navn i `localStorage`
+
+## Spillet har 3 deler
+
+1. **Del 1: Sorter ikoner til riktig bokstav-kasse** (f.eks. 🚗 og 🧸 til B-kassen).
+2. **Del 2: Sett inn riktig bokstav i ord** (f.eks. `B _ l`).
+3. **Del 3: Omvendt sortering** – sorter ord til riktig ikon-kasse.
+
+Funksjoner:
+
+- umiddelbare tilbakemeldinger
+- progresjon og historikk lagres per navn i `localStorage`
+- stjerner og merker
 
 ## Kjør lokalt
 
@@ -18,4 +24,4 @@ Et nettbasert, berøringsvennlig læringsspill for barn (6–10 år) med fysiske
 python3 -m http.server 4173
 ```
 
-Åpne deretter `http://localhost:4173` (videresender til `login.html`).
+Åpne `http://localhost:4173` (videresender til `login.html`).

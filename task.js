@@ -14,14 +14,12 @@ const el = {
   rewardAnimation: document.getElementById("rewardAnimation")
 };
 
-const categoryKey = sessionStorage.getItem("lesestjerner-current-category");
-let levelIndex = Number(sessionStorage.getItem("lesestjerner-current-level"));
-let taskIndex = Number(sessionStorage.getItem("lesestjerner-current-task") || "0");
-let selectedWordButton = null;
+let selectedButton = null;
+let partIndex = Number(sessionStorage.getItem("lesestjerner-current-part"));
+let stepIndex = Number(sessionStorage.getItem("lesestjerner-current-step") || "0");
 
 if (!getActiveUserData()) window.location.href = "login.html";
-if (!categoryKey || !gameCategories[categoryKey]) window.location.href = "levels.html";
-if (Number.isNaN(levelIndex) || !gameCategories[categoryKey].levels[levelIndex]) window.location.href = "levels.html";
+if (Number.isNaN(partIndex) || !gameData.parts[partIndex]) window.location.href = "levels.html";
 
 function showReward(message) {
   el.rewardAnimation.textContent = message;
@@ -39,112 +37,84 @@ function renderProgress(progress, name) {
     : "Ingen merker ennå. Spill for å tjene dine første!";
 }
 
-function completeCurrentTask() {
+function completePartIfDone() {
   const ctx = getActiveUserData();
   const data = ctx.data;
   const progress = ctx.progress;
-  const categoryProgress = progress.categories[categoryKey];
-  const levelTasks = gameCategories[categoryKey].levels[levelIndex].tasks;
-  const lastTask = taskIndex >= levelTasks.length - 1;
 
-  if (!lastTask) {
-    taskIndex += 1;
-    sessionStorage.setItem("lesestjerner-current-task", String(taskIndex));
-    renderTask();
-    return;
+  if (!progress.completedParts.includes(partIndex)) {
+    progress.completedParts.push(partIndex);
   }
 
-  if (!categoryProgress.completedLevels.includes(levelIndex)) {
-    categoryProgress.completedLevels.push(levelIndex);
+  const nextPart = partIndex + 1;
+  if (gameData.parts[nextPart] && !progress.unlockedParts.includes(nextPart)) {
+    progress.unlockedParts.push(nextPart);
   }
 
-  const nextLevel = levelIndex + 1;
-  if (gameCategories[categoryKey].levels[nextLevel] && !categoryProgress.unlockedLevels.includes(nextLevel)) {
-    categoryProgress.unlockedLevels.push(nextLevel);
-  }
-
-  categoryProgress.history.push({
+  progress.history.push({
     when: new Date().toLocaleString("no-NO"),
-    text: `Fullførte nivå ${levelIndex + 1}: ${gameCategories[categoryKey].levels[levelIndex].name}`
+    text: `Fullførte ${gameData.parts[partIndex].name}`
   });
 
   saveData(data);
-  sessionStorage.removeItem("lesestjerner-current-level");
-  sessionStorage.removeItem("lesestjerner-current-task");
+  sessionStorage.removeItem("lesestjerner-current-part");
+  sessionStorage.removeItem("lesestjerner-current-step");
   window.location.href = "levels.html";
 }
 
-function onMultipleChoiceAnswer(button, choice, task) {
-  const ctx = getActiveUserData();
-  const data = ctx.data;
-  const progress = ctx.progress;
-
-  if (choice === task.answer) {
-    [...el.answerButtons.querySelectorAll("button")].forEach((btn) => (btn.disabled = true));
-    button.classList.add("correct");
-    progress.stars += 1;
-    el.feedback.textContent = "Supert! Riktig svar 🎉";
-    el.feedback.classList.add("good");
-
-    const newBadges = applyBadges(progress);
-    if (newBadges.length) showReward(`Nytt merke: ${newBadges.join(", ")} 🏅`);
-
-    saveData(data);
-    renderProgress(progress, ctx.name);
-    window.setTimeout(completeCurrentTask, 650);
-    return;
-  }
-
-  button.classList.add("wrong");
-  button.disabled = true;
-  el.feedback.textContent = "Prøv igjen!";
-  el.feedback.classList.add("bad");
+function giveStarAndMaybeBadge(ctx) {
+  ctx.progress.stars += 1;
+  const newBadges = applyBadges(ctx.progress);
+  if (newBadges.length) showReward(`Nytt merke: ${newBadges.join(", ")} 🏅`);
+  saveData(ctx.data);
+  renderProgress(ctx.progress, ctx.name);
 }
 
-function handleDropToBin(wordButton, binId, task, progress, ctx) {
-  const targetId = wordButton.dataset.itemId;
-  const target = task.items.find((item) => item.id === targetId);
-  if (!target) return;
+function goToNextStep(totalSteps) {
+  if (stepIndex < totalSteps - 1) {
+    stepIndex += 1;
+    sessionStorage.setItem("lesestjerner-current-step", String(stepIndex));
+    renderTask();
+    return;
+  }
+  completePartIfDone();
+}
 
-  if (target.binId === binId) {
-    wordButton.classList.remove("selected-word");
-    wordButton.classList.add("correct");
-    wordButton.disabled = true;
-    wordButton.draggable = false;
-    progress.stars += 1;
+function handleDropChoice(button, binId, items, totalSteps) {
+  const ctx = getActiveUserData();
+  const item = items.find((it) => it.id === button.dataset.itemId);
+  if (!item) return;
 
-    const binWords = el.answerButtons.querySelector(`[data-bin-words='${binId}']`);
-    if (binWords) binWords.appendChild(wordButton);
+  if (item.binId === binId) {
+    button.classList.remove("selected-word");
+    button.classList.add("correct");
+    button.disabled = true;
+    button.draggable = false;
+    const targetContainer = el.answerButtons.querySelector(`[data-bin-words='${binId}']`);
+    if (targetContainer) targetContainer.appendChild(button);
 
-    const sortedNow = el.answerButtons.querySelectorAll(".answer.correct").length;
-    el.feedback.textContent = `Riktig! ${sortedNow} av ${task.items.length} sortert.`;
+    const correctCount = el.answerButtons.querySelectorAll(".answer.correct").length;
+    el.feedback.textContent = `Riktig! ${correctCount} av ${items.length} sortert.`;
     el.feedback.className = "feedback good";
 
-    const newBadges = applyBadges(progress);
-    if (newBadges.length) showReward(`Nytt merke: ${newBadges.join(", ")} 🏅`);
-
-    saveData(ctx.data);
-    renderProgress(progress, ctx.name);
-
-    if (sortedNow >= task.items.length) {
+    const allDone = correctCount >= items.length;
+    if (allDone) {
+      giveStarAndMaybeBadge(ctx);
       showReward("Flott sortert! ✅");
-      window.setTimeout(completeCurrentTask, 700);
+      window.setTimeout(() => goToNextStep(totalSteps), 700);
     }
     return;
   }
 
-  wordButton.classList.add("wrong");
-  window.setTimeout(() => wordButton.classList.remove("wrong"), 450);
-  el.feedback.textContent = "Nesten! Prøv en annen bokstav-kasse.";
+  button.classList.add("wrong");
+  window.setTimeout(() => button.classList.remove("wrong"), 450);
+  el.feedback.textContent = "Nesten! Prøv en annen kasse.";
   el.feedback.className = "feedback bad";
 }
 
-function renderSortTask(task) {
-  const ctx = getActiveUserData();
-  if (!ctx) return;
-  const progress = ctx.progress;
-
-  el.taskContent.textContent = `${task.prompt}`;
+function renderSortPanel(task, itemRenderer, totalSteps) {
+  selectedButton = null;
+  el.taskContent.textContent = task.prompt;
   el.answerButtons.innerHTML = "";
 
   const panel = document.createElement("div");
@@ -154,32 +124,26 @@ function renderSortTask(task) {
   itemsWrap.className = "sort-items";
 
   task.items.forEach((item) => {
-    const wordBtn = document.createElement("button");
-    wordBtn.className = "answer icon-item";
-    wordBtn.dataset.itemId = item.id;
-    wordBtn.draggable = true;
-    wordBtn.setAttribute("aria-label", item.label);
-    wordBtn.title = item.label;
+    const btn = document.createElement("button");
+    btn.className = "answer";
+    btn.dataset.itemId = item.id;
+    btn.draggable = true;
+    itemRenderer(btn, item);
 
-    const icon = document.createElement("span");
-    icon.className = "icon-emoji";
-    icon.textContent = item.icon;
-    wordBtn.appendChild(icon);
-
-    wordBtn.addEventListener("dragstart", () => {
-      selectedWordButton = wordBtn;
+    btn.addEventListener("dragstart", () => {
+      selectedButton = btn;
     });
 
-    wordBtn.addEventListener("click", () => {
-      if (wordBtn.disabled) return;
-      selectedWordButton = wordBtn;
-      [...itemsWrap.querySelectorAll("button")].forEach((btn) => btn.classList.remove("selected-word"));
-      wordBtn.classList.add("selected-word");
-      el.feedback.textContent = `Valgt ikon. Trykk på riktig bokstav-kasse.`;
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      selectedButton = btn;
+      [...itemsWrap.querySelectorAll("button")].forEach((x) => x.classList.remove("selected-word"));
+      btn.classList.add("selected-word");
+      el.feedback.textContent = "Valgt element. Trykk på riktig kasse.";
       el.feedback.className = "feedback";
     });
 
-    itemsWrap.appendChild(wordBtn);
+    itemsWrap.appendChild(btn);
   });
 
   const binsWrap = document.createElement("div");
@@ -188,7 +152,6 @@ function renderSortTask(task) {
   task.bins.forEach((bin) => {
     const box = document.createElement("div");
     box.className = "sort-bin";
-    box.dataset.bin = bin.id;
 
     const title = document.createElement("h3");
     title.textContent = bin.label;
@@ -203,13 +166,13 @@ function renderSortTask(task) {
     box.addEventListener("dragover", (event) => event.preventDefault());
     box.addEventListener("drop", (event) => {
       event.preventDefault();
-      if (!selectedWordButton) return;
-      handleDropToBin(selectedWordButton, bin.id, task, progress, ctx);
+      if (!selectedButton) return;
+      handleDropChoice(selectedButton, bin.id, task.items, totalSteps);
     });
 
     box.addEventListener("click", () => {
-      if (!selectedWordButton) return;
-      handleDropToBin(selectedWordButton, bin.id, task, progress, ctx);
+      if (!selectedButton) return;
+      handleDropChoice(selectedButton, bin.id, task.items, totalSteps);
     });
 
     binsWrap.appendChild(box);
@@ -218,45 +181,87 @@ function renderSortTask(task) {
   panel.appendChild(itemsWrap);
   panel.appendChild(binsWrap);
   el.answerButtons.appendChild(panel);
-
-  el.feedback.textContent = `Sorter ${task.items.length} ikoner i riktig bokstav-kasse.`;
+  el.feedback.textContent = `Sorter ${task.items.length} elementer i riktig kasse.`;
   el.feedback.className = "feedback";
 }
 
-function renderTask() {
-  const ctx = getActiveUserData();
-  if (!ctx) return;
-
-  const level = gameCategories[categoryKey].levels[levelIndex];
-  const task = level.tasks[taskIndex];
-  selectedWordButton = null;
-
-  renderProgress(ctx.progress, ctx.name);
-  el.taskTitle.textContent = `${gameCategories[categoryKey].title} – Nivå ${levelIndex + 1}: ${level.name}`;
-  el.taskInstruction.textContent = `Oppgave ${taskIndex + 1} av ${level.tasks.length}`;
-  el.taskContent.textContent = "";
-  el.feedback.textContent = "";
-  el.feedback.className = "feedback";
-
-  if (task.type === "sort") {
-    renderSortTask(task);
-    return;
-  }
-
-  el.taskContent.textContent = task.prompt;
+function renderFillLetterTask(part, totalSteps) {
+  const task = part.tasks[stepIndex];
+  el.taskContent.textContent = task.text;
   el.answerButtons.innerHTML = "";
+
   task.choices.forEach((choice) => {
     const btn = document.createElement("button");
     btn.className = "answer";
     btn.textContent = choice;
-    btn.addEventListener("click", () => onMultipleChoiceAnswer(btn, choice, task));
+    btn.addEventListener("click", () => {
+      if (choice === task.answer) {
+        const ctx = getActiveUserData();
+        [...el.answerButtons.querySelectorAll("button")].forEach((x) => (x.disabled = true));
+        btn.classList.add("correct");
+        el.feedback.textContent = "Riktig bokstav! 🎉";
+        el.feedback.className = "feedback good";
+        giveStarAndMaybeBadge(ctx);
+        window.setTimeout(() => goToNextStep(totalSteps), 650);
+      } else {
+        btn.classList.add("wrong");
+        btn.disabled = true;
+        el.feedback.textContent = "Prøv igjen!";
+        el.feedback.className = "feedback bad";
+      }
+    });
     el.answerButtons.appendChild(btn);
   });
 }
 
+function renderTask() {
+  const ctx = getActiveUserData();
+  const part = gameData.parts[partIndex];
+
+  renderProgress(ctx.progress, ctx.name);
+  el.taskTitle.textContent = `Norsk – ${part.name}`;
+  el.taskInstruction.textContent = part.type === "fill-letter"
+    ? `Oppgave ${stepIndex + 1} av ${part.tasks.length}`
+    : "Sorter alle elementene riktig";
+  el.feedback.textContent = "";
+  el.feedback.className = "feedback";
+
+  if (part.type === "sort-icon-to-letter") {
+    renderSortPanel(
+      part,
+      (btn, item) => {
+        btn.classList.add("icon-item");
+        btn.setAttribute("aria-label", item.label);
+        btn.title = item.label;
+        const icon = document.createElement("span");
+        icon.className = "icon-emoji";
+        icon.textContent = item.icon;
+        btn.appendChild(icon);
+      },
+      1
+    );
+    return;
+  }
+
+  if (part.type === "sort-word-to-icon") {
+    renderSortPanel(
+      part,
+      (btn, item) => {
+        btn.textContent = item.text;
+      },
+      1
+    );
+    return;
+  }
+
+  if (part.type === "fill-letter") {
+    renderFillLetterTask(part, part.tasks.length);
+  }
+}
+
 el.backToLevelsBtn.addEventListener("click", () => {
-  sessionStorage.removeItem("lesestjerner-current-level");
-  sessionStorage.removeItem("lesestjerner-current-task");
+  sessionStorage.removeItem("lesestjerner-current-part");
+  sessionStorage.removeItem("lesestjerner-current-step");
   window.location.href = "levels.html";
 });
 
@@ -264,9 +269,8 @@ el.logoutBtn.addEventListener("click", () => {
   const data = loadData();
   data.activeUser = null;
   saveData(data);
-  sessionStorage.removeItem("lesestjerner-current-category");
-  sessionStorage.removeItem("lesestjerner-current-level");
-  sessionStorage.removeItem("lesestjerner-current-task");
+  sessionStorage.removeItem("lesestjerner-current-part");
+  sessionStorage.removeItem("lesestjerner-current-step");
   window.location.href = "login.html";
 });
 
